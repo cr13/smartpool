@@ -1,0 +1,112 @@
+doctype html
+html(lang='es')
+  head
+    title Smartpool
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width')
+    link(href='/font/stylesheet.css', rel='stylesheet', type='text/css')
+    link(href='/css/bootstrap.min.css', rel='stylesheet', type='text/css')
+    link(href='/css/bootstrap-responsive.min.css', rel='stylesheet', type='text/css')
+    link(href='/css/styles.css', rel='stylesheet', type='text/css')
+    link(href='/css/media-queries.css', rel='stylesheet', type='text/css')
+    link(href='/fancybox/jquery.fancybox-1.3.4.css', rel='stylesheet', type='text/css', media='screen')
+    link(href='/img/favicon.png', rel='shortcut icon', type='image/x-icon')
+    //if lt IE 9
+      script(src='/javascripts/css3-mediaqueries.js')
+      script(src='/javascripts/html5.js')
+  body(data-spy='scroll')
+    // TOP MENU NAVIGATION
+    .navbar.navbar-fixed-top
+      .navbar-inner
+        .container
+          a.brand.pull-left(href='#')  SmartPool 
+          a.btn.btn-navbar(data-toggle='collapse', data-target='.nav-collapse')
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          .nav-collapse.collapse
+            ul#nav-list.nav.pull-right
+              li
+                a(href='#home') Inicio
+              li
+                a(href='#about') Descripción
+    // MAIN CONTENT
+    #home.container.content.container-fluid
+      // HOME
+      .row-fluid
+        // PHONES IMAGE FOR DESKTOP MEDIA QUERY
+        .span5.visible-desktop
+          img(src='/img/phones.png', alt='')
+        // APP DETAILS
+        .span7
+          // ICON
+          #icon.visible-desktop
+            img(src='/img/app_icon.png', alt='')
+          // APP NAME
+          #app-name
+            h1 SmartPool
+          // VERSION
+          #version
+            span.version-top.label.label-inverse Versión 1.0
+          // TAGLINE
+          #tagline  Monitorización de piscina 
+          // PHONES IMAGE FOR TABLET MEDIA QUERY
+          #phones.hidden-desktop
+            img(src='/img/phones.png', alt='')
+          // DESCRIPTION
+          #description  Monitorización a tiempo real del estado del agua tú picina
+          // FEATURES
+          ul#features
+            li Monitorización a tiempo real mediante conexión Bluetooth Low Energy
+            li Estadísticas de la monitorización
+            li Lecturas de Temperatura, pH y turbidez
+            li Test de lectura cada hora
+          // DOWNLOAD & REQUIREMENT BOX
+          .download-box
+            a(href='#')
+              img(src='/img/android_app_on_play_logo_large.png', alt='')
+          .download-box
+            strong Requerimientos:
+            br
+            |         Requisitos mínimos: Android 5.1 o superior. WiFi o red 3G (conexión a veces requerida).
+      // ABOUT & UPDATES
+      #about.row-fluid
+        .span6
+          h2#scroll_up.page-title
+            | Descripción 
+            a.arrow-top(href='#home')
+              img(src='/img/arrow-top.png', alt='')
+          p
+            | SmartPool es un microcontrolador con 3 sensores(temperatura, turbidez y pH), con conexión bluetooth y wifi. También consta de un lector de tarjeta micro sd para guardar un seguimiento de los test realizados en caso de fallo del wifi o en caso de no tener conexión.
+          p
+            | También lleva incluido un reloj de gran precisión que ahora mismo sólo se utiliza para llevar un control de los test, pero en el futuro se quisiera utilizar para la programación de la depuración del agua.
+          p
+            | Mediante la aplicación, en android se puede configuar la red wifi a la que conecta el dispositivo para poder almacenar en la nube los test diarios realizados.
+            br
+            |         Como también podemos ver mediante conexión wifi los test actuales del agua y la opción a ver unas estadísticas semanal o mensual de los datos recogidos por el dispositvo.
+        #updates.span6.updates
+          h2#scroll_up.page-title
+            | Updates 
+            a.arrow-top(href='#home')
+              img(src='/img/arrow-top.png', alt='')
+          // UPDATES & RELEASE NOTES
+          h3.version Version 1.0
+          span.release-date Lanzamiento en Junio, 2018
+          ul
+            li
+              span.label.label-info NEW
+              | Publicación inicial
+      // FOOTER
+      .footer.container.container-fluid
+        // COPYRIGHT - EDIT HOWEVER YOU WANT!
+        #copyright
+          | © Copyright 2018 
+          a(href='#') TFG|Cristóbal Rodríguez Reina
+          | . All Rights Reserved
+      script(src='/javascripts/jquery-1.7.2.min.js')
+      script(src='/javascripts/bootstrap.min.js')
+      script(src='/javascripts/bootstrap-collapse.js')
+      script(src='/javascripts/bootstrap-scrollspy.js')
+      script(src='/fancybox/jquery.mousewheel-3.0.4.pack.js')
+      script(src='/fancybox/jquery.fancybox-1.3.4.pack.js')
+      script(src='/javascripts/init.js')
