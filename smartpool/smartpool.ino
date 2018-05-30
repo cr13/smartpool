@@ -68,6 +68,7 @@ std::string password;
 /********************************************************************/
 
 // Definicion de variables
+//Variable del reloj DS3231
 RTClib RTC;
 
 // Configuración de acceso a la BD
@@ -104,6 +105,15 @@ unsigned long hora_futura;
 unsigned long Tmax = 216000*2; //2 minuto
 unsigned long Texceso = 0;
 
+/********************************************************************/
+// Setup a oneWire instance to communicate with any OneWire devices  
+// (not just Maxim/Dallas temperature ICs) 
+OneWire oneWire(ONE_WIRE_BUS);
+
+// Pass our oneWire reference to Dallas Temperature. 
+DallasTemperature DS18B20(&oneWire);
+/********************************************************************/ 
+
 //Creamos el servidor BLE con los servicios y sus características
 BLEServer *pServer = NULL;
 BLECharacteristic *pCharacteristic_TX;
@@ -132,14 +142,6 @@ BLECharacteristic *pCharacteristic_TX_name;
 #define CHARACTERISTIC_UUID_RX_name "0000ffd5-0000-1000-8000-73a310a5bbfd"
 #define CHARACTERISTIC_UUID_TX_name "0000ffe5-0000-1000-8000-73a310a5bbfd"
 
-/********************************************************************/
-// Setup a oneWire instance to communicate with any OneWire devices  
-// (not just Maxim/Dallas temperature ICs) 
-OneWire oneWire(ONE_WIRE_BUS);
-
-// Pass our oneWire reference to Dallas Temperature. 
-DallasTemperature DS18B20(&oneWire);
-/********************************************************************/ 
 
 // Clases bluetooth
 class MyServerCallbacks: public BLEServerCallbacks {
