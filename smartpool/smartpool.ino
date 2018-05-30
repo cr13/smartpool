@@ -61,7 +61,7 @@ int DireccionSSID = 27;
 int DireccionPass = 45;
 
 /********************************************************************/
-//Configuración de conexion wifi y variables para ajustar la fecha y hora
+//Configuración de conexion wifi
 std::string ssid;
 std::string password;
 
