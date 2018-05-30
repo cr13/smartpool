@@ -173,7 +173,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 /********************************************************************/
   
-//Métodos de escritura y lectura para SD card
+//Métodos de lectura para SD card
 void readFile(fs::FS &fs, const char * path){
     if(SD.exists(path)){
       String dataLINE;
@@ -401,7 +401,7 @@ void setup() {
   
   delay(1000);
    
-  //Preparamos el montahe de la SD card
+  //Preparamos el montaje de la SD card
   if(!SD.begin()){
       Serial.println("Card Mount Failed");
       return;
@@ -440,29 +440,27 @@ void setup() {
 void loop() { 
    delay(350);
    DateTime now = RTC.now();
-     Serial.print(now.year(), DEC);
-    Serial.print('/');
-    Serial.print(now.month(), DEC);
-    Serial.print('/');
-    Serial.print(now.day(), DEC);
-    Serial.print(' ');
-    Serial.print(now.hour(), DEC);
-    Serial.print(':');
-    Serial.print(now.minute(), DEC);
-    Serial.print(':');
-    Serial.print(now.second(), DEC);
-    Serial.println();
-  temp = leerTemperatura();
-  turbi = leerTurbidez();
-  ph =leerPh();
-  //fecha_hora=now.unixtime()-7150; 2:59:10
-  //fecha_hora=now.unixtime()-3510;
-  fecha_hora=now.unixtime();
-  Serial.println(String("Hora actual=  ")+fecha_hora);
+   Serial.print(now.year(), DEC);
+   Serial.print('/');
+   Serial.print(now.month(), DEC);
+   Serial.print('/');
+   Serial.print(now.day(), DEC);
+   Serial.print(' ');
+   Serial.print(now.hour(), DEC);
+   Serial.print(':');
+   Serial.print(now.minute(), DEC);
+   Serial.print(':');
+   Serial.print(now.second(), DEC);
+   Serial.println();
+   temp = leerTemperatura();
+   turbi = leerTurbidez();
+   ph =leerPh();
+   fecha_hora=now.unixtime();
+   Serial.println(String("Hora actual=  ")+fecha_hora);
 
-  // Cuando se recibe un string por bluetooth ////////////////////////////
-  if (BTstring_Complete == 1)
-  {     
+   // Cuando se recibe un string por bluetooth ////////////////////////////
+   if (BTstring_Complete == 1)
+   {     
    
     BTstring_Complete = 0; 
     Serial.println(inputString_BT);
@@ -494,51 +492,51 @@ void loop() {
         
         }
        
-  }
-  if(hora_futura==0 || fecha_hora>=hora_futura){
-    hora_futura=fecha_hora + 3600;
-    fecha=(String)(fecha_hora-(3600*2));
-    datos="{'"+MAC_BLE+"' : {'"+fecha+"' : {'temp':{'value': " + temp + ",'name':'Temperatura', 'unit':'ºC'},'turbi':{'value': "+turbi+",'name':'Turbidez', 'unit':'%'},'ph':{'value': "+ph+",'name':'PH', 'unit':''}}}}";
-    writeEEPROM(DireccionHora_fut, hora_futura);
-    Serial.println(fecha+String(" Hora Futura= ")+hora_futura);
-    String fechaSD=String(now.day(), DEC)+"-"+String(now.month(), DEC)+"-"+String(now.year(), DEC)+" "+String(now.hour(), DEC)+":"+String(now.minute(), DEC)+":"+String(now.second(), DEC);
+   }
+   if(hora_futura==0 || fecha_hora>=hora_futura){
+     hora_futura=fecha_hora + 3600;
+     fecha=(String)(fecha_hora-(3600*2));
+     datos="{'"+MAC_BLE+"' : {'"+fecha+"' : {'temp':{'value': " + temp + ",'name':'Temperatura', 'unit':'ºC'},'turbi':{'value': "+turbi+",'name':'Turbidez', 'unit':'%'},'ph':{'value': "+ph+",'name':'PH', 'unit':''}}}}";
+     writeEEPROM(DireccionHora_fut, hora_futura);
+     Serial.println(fecha+String(" Hora Futura= ")+hora_futura);
+     String fechaSD=String(now.day(), DEC)+"-"+String(now.month(), DEC)+"-"+String(now.year(), DEC)+" "+String(now.hour(), DEC)+":"+String(now.minute(), DEC)+":"+String(now.second(), DEC);
 
-    appendFile(SD, "/datosSD.txt",fechaSD+" "+temp+"  "+ turbi +"  "+ ph,true);
+     appendFile(SD, "/datosSD.txt",fechaSD+" "+temp+"  "+ turbi +"  "+ ph,true);
     
-    if(WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
+     if(WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
     
-      int  httpResponseCode = actualizarBD(datos); 
+       int  httpResponseCode = actualizarBD(datos); 
       
-      if(httpResponseCode>0){
-        Serial.println(httpResponseCode);   //Print return code
-      }else{
-        Serial.println(httpResponseCode);
-      }
+       if(httpResponseCode>0){
+         Serial.println(httpResponseCode);   //Print return code
+       }else{
+         Serial.println(httpResponseCode);
+       }
       
-    }else{
-      if(!conectarWifi()){
-        appendFile(SD, "/datosErrorBD.json",datos,true);
-        Serial.println("Error wifi desconectado");
-        //readFile(SD, "/datosErrorBD.json");   
-      }else
-        readFile(SD, "/datosErrorBD.json");   
-    }
+     }else{
+       if(!conectarWifi()){
+         appendFile(SD, "/datosErrorBD.json",datos,true);
+         Serial.println("Error wifi desconectado");
+         //readFile(SD, "/datosErrorBD.json");   
+       }else
+         readFile(SD, "/datosErrorBD.json");   
+     }
        
-  }
+   }
   
 }
 
 //Función para leer por el sensor( DS18B20 )
-String leerTemperatura(){
- DS18B20.requestTemperatures(); // Petición para obtener las lecturas
- String temp=String(DS18B20.getTempCByIndex(0),2);
- Serial.println(String("temperatura ")+ temp) ;
- if (deviceConnected) {
-    pCharacteristic_RX_temp->setValue(temp.c_str());
-    //delay(10);
-    pCharacteristic_RX_temp->notify(); 
- }
- return temp;
+   String leerTemperatura(){
+   DS18B20.requestTemperatures(); // Petición para obtener las lecturas
+   String temp=String(DS18B20.getTempCByIndex(0),2);
+   Serial.println(String("temperatura ")+ temp) ;
+   if (deviceConnected) {
+     pCharacteristic_RX_temp->setValue(temp.c_str());
+     //delay(10);
+     pCharacteristic_RX_temp->notify(); 
+   }
+   return temp;
 }
 
 //Función para leer por el sensor( SEN0189 )
@@ -564,45 +562,45 @@ String leerPh(){
   for(int i=0;i<10;i++) { 
     buf[i]=analogRead(ANALOG_PIN_3);
     delay(10);
- }
+  }
 
- //Ordenamos las medidas obtenidas de menor a mayor
- for(int i=0;i<9;i++){
-  for(int j=i+1;j<10;j++){
-    if(buf[i]>buf[j]){
-      aux=buf[i];
-      buf[i]=buf[j];
-      buf[j]=aux;
+  //Ordenamos las medidas obtenidas de menor a mayor
+  for(int i=0;i<9;i++){
+   for(int j=i+1;j<10;j++){
+     if(buf[i]>buf[j]){
+       aux=buf[i];
+       buf[i]=buf[j];
+       buf[j]=aux;
+    }
    }
   }
- }
- avgValue=0;
+  avgValue=0;
  
-//Descartamos las 2 primeras y las 2 ultimas lecturas, y las sumamos
- for(int i=2;i<8;i++)
-  avgValue+=buf[i];
+  //Descartamos las 2 primeras y las 2 ultimas lecturas, y las sumamos
+  for(int i=2;i<8;i++)
+    avgValue+=buf[i];
   
- //Convierte la lectura analógica (que va de 0 - 4096) a una tensión (0 - 5V) y lo dividimos entre las 6 muestras tomadas.
- float pHVol=(float)avgValue*5.0/4096.0/6; 
+  //Convierte la lectura analógica (que va de 0 - 4096) a una tensión (0 - 5V) y lo dividimos entre las 6 muestras tomadas.
+  float pHVol=(float)avgValue*5.0/4096.0/6; 
 
- //Para obtener voltageRef_4.01 y voltageRef_7.01 tenemos que hacer dos ecuaciones de dos incognitas
- // voltageRef_4.01 * x + y = 4.01
- //voltageRef_7.01 * x + y = 7.01
+  //Para obtener voltageRef_4.01 y voltageRef_7.01 tenemos que hacer dos ecuaciones de dos incognitas
+  // voltageRef_4.01 * x + y = 4.01
+  //voltageRef_7.01 * x + y = 7.01
  
- //Formula voltageRef_4.01 * voltageActual + voltageRef_7.01
- float phValue = -2.4 * pHVol + 15.17;
+  //Formula voltageRef_4.01 * voltageActual + voltageRef_7.01
+  float phValue = -2.4 * pHVol + 15.17;
  
- Serial.println(String("voltage ")+pHVol +" nivel pH = " + phValue);
+  Serial.println(String("voltage ")+pHVol +" nivel pH = " + phValue);
 
- // pH           Multimetro  Arduino
- // 4.01 --> voltage   2.98      4.55
- // 7.01 --> voltage   2.44      3.46
- String ph=String(phValue,2);
- if (deviceConnected) {
-    pCharacteristic_RX_ph->setValue(ph.c_str());
-    //delay(10);
-    pCharacteristic_RX_ph->notify(); 
- }
+  // pH           Multimetro  Arduino
+  // 4.01 --> voltage   2.98      4.55
+  // 7.01 --> voltage   2.44      3.46
+  String ph=String(phValue,2);
+  if (deviceConnected) {
+     pCharacteristic_RX_ph->setValue(ph.c_str());
+     //delay(10);
+     pCharacteristic_RX_ph->notify(); 
+  }
   
   return ph;
 }
