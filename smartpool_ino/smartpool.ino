@@ -28,7 +28,8 @@
 
 //Librerias reloj DS3231 RTC
 #include <Wire.h>//conecta el bus i2c 
-#include "DS3231.h"
+//#include "DS3231.h"
+#include "RTClib.h"
 
 using namespace std;
 
@@ -61,18 +62,17 @@ int DireccionSSID = 27;
 int DireccionPass = 45;
 
 /********************************************************************/
-//Configuración de conexion wifi
+//Configuración de conexion wifi y variables para ajustar la fecha y hora
 std::string ssid;
 std::string password;
 
 /********************************************************************/
 
 // Definicion de variables
-//Variable del reloj DS3231
-RTClib RTC;
+RTC_DS3231 RTC;
 
 // Configuración de acceso a la BD
-#define API_HOST "https://smartpoolapi.herokuapp.com/XXXXXXXXXXX"
+#define API_HOST "https://smartpoolapi.herokuapp.com/XXXXXXX"
 #define API_HEADER "Content-Type", "application/x-www-form-urlencoded"
 
 // Data wire is plugged into pin 4 on the ESP32 
@@ -102,17 +102,9 @@ bool deviceConnected           = false ;
 // Unsigned long //
 unsigned long fecha_hora;
 unsigned long hora_futura;
+DateTime future;
 unsigned long Tmax = 216000*2; //2 minuto
 unsigned long Texceso = 0;
-
-/********************************************************************/
-// Setup a oneWire instance to communicate with any OneWire devices  
-// (not just Maxim/Dallas temperature ICs) 
-OneWire oneWire(ONE_WIRE_BUS);
-
-// Pass our oneWire reference to Dallas Temperature. 
-DallasTemperature DS18B20(&oneWire);
-/********************************************************************/ 
 
 //Creamos el servidor BLE con los servicios y sus características
 BLEServer *pServer = NULL;
@@ -123,8 +115,8 @@ BLECharacteristic *pCharacteristic_RX_turb;
 BLECharacteristic *pCharacteristic_TX_turb;
 BLECharacteristic *pCharacteristic_RX_ph;
 BLECharacteristic *pCharacteristic_TX_ph;
-BLECharacteristic *pCharacteristic_RX_cloro;
-BLECharacteristic *pCharacteristic_TX_cloro;
+BLECharacteristic *pCharacteristic_RX_date;
+BLECharacteristic *pCharacteristic_TX_date;
 BLECharacteristic *pCharacteristic_RX_name;
 BLECharacteristic *pCharacteristic_TX_name;
 
@@ -137,11 +129,18 @@ BLECharacteristic *pCharacteristic_TX_name;
 #define CHARACTERISTIC_UUID_TX_turb "0000ffe4-0000-1000-8000-73a310a5bbfd"
 #define CHARACTERISTIC_UUID_RX_ph "0000ffd2-0000-1000-8000-73a310a5bbfd"
 #define CHARACTERISTIC_UUID_TX_ph "0000ffe2-0000-1000-8000-73a310a5bbfd"
-#define CHARACTERISTIC_UUID_RX_cloro "0000ffd3-0000-1000-8000-73a310a5bbfd"
-#define CHARACTERISTIC_UUID_TX_cloro "0000ffe3-0000-1000-8000-73a310a5bbfd"
+#define CHARACTERISTIC_UUID_RX_date "0000ffd3-0000-1000-8000-73a310a5bbfd"
+#define CHARACTERISTIC_UUID_TX_date "0000ffe3-0000-1000-8000-73a310a5bbfd"
 #define CHARACTERISTIC_UUID_RX_name "0000ffd5-0000-1000-8000-73a310a5bbfd"
 #define CHARACTERISTIC_UUID_TX_name "0000ffe5-0000-1000-8000-73a310a5bbfd"
 
+/********************************************************************/
+// Configurar una instancia de OneWire para comunicarse con cualquier dispositivo OneWire  
+OneWire oneWire(ONE_WIRE_BUS);
+
+// Pasa nuestra referencia OneWire a la temperatura de Dallas. 
+DallasTemperature DS18B20(&oneWire);
+/********************************************************************/ 
 
 // Clases bluetooth
 class MyServerCallbacks: public BLEServerCallbacks {
@@ -173,7 +172,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 /********************************************************************/
   
-//Métodos de lectura para SD card
+//Métodos de escritura y lectura para SD card
 void readFile(fs::FS &fs, const char * path){
     if(SD.exists(path)){
       String dataLINE;
@@ -205,7 +204,7 @@ void readFile(fs::FS &fs, const char * path){
     }else
       Serial.println(F("No hay datos que guardar en BD"));
 }
-//Método de escritura en la SD card
+
 void appendFile(fs::FS &fs, const char * path, String message, boolean finLinea){
     //Serial.printf("Appending to file: %s\n", path);
 
@@ -224,7 +223,7 @@ void appendFile(fs::FS &fs, const char * path, String message, boolean finLinea)
       }
     file.close();
 }
-//Método de eliminación de un fichero dado en la SD card
+
 void deleteFile(fs::FS &fs, const char * path){
     Serial.printf("Deleting file: %s\n", path);
     if(fs.remove(path)){
@@ -234,13 +233,14 @@ void deleteFile(fs::FS &fs, const char * path){
     }
 }
 
-//Método de envio usando http y el método de solicitud POST
-int actualizarBD(String json){
+
+//Método para salvar los datos en la BD
+int  actualizarBD(String json){
   HTTPClient http;
   String type = "POST";
   http.begin(API_HOST);
   http.addHeader(API_HEADER);  //Specify content-type header
-  String post= "data="+json+"&uid=XXXXXXXXXXXXXXXXXX";//JSON con autorización para guardar en la BD
+  String post= "data="+json+"&uid=XxxXXxxxXXxXxXXxxXXx";
   int httpCode = http.POST(post);
 
   String resultado = http.getString();
@@ -311,17 +311,17 @@ void createServiceBle(){
                                        ); 
   pCharacteristic_TX_ph->setCallbacks(new MyCallbacks());
   //////////////////////////
-  pCharacteristic_TX_cloro = pService1->createCharacteristic(
-                                         CHARACTERISTIC_UUID_TX_cloro,
+  pCharacteristic_TX_date = pService1->createCharacteristic(
+                                         CHARACTERISTIC_UUID_TX_date,
                                          BLECharacteristic::PROPERTY_READ |
                                          BLECharacteristic::PROPERTY_WRITE
                                        );
-  pCharacteristic_RX_cloro = pService1->createCharacteristic(
-                                         CHARACTERISTIC_UUID_RX_cloro,
+  pCharacteristic_RX_date = pService1->createCharacteristic(
+                                         CHARACTERISTIC_UUID_RX_date,
                                          BLECharacteristic::PROPERTY_READ |
                                          BLECharacteristic::PROPERTY_NOTIFY
                                        );
-  pCharacteristic_TX_cloro->setCallbacks(new MyCallbacks());                              
+  pCharacteristic_TX_date->setCallbacks(new MyCallbacks());                              
   //////////////////////////
   pCharacteristic_TX_name = pService1->createCharacteristic(
                                          CHARACTERISTIC_UUID_TX_name,
@@ -392,6 +392,12 @@ void setup() {
 
   //Iniciamos servicio de Reloj y leemos la proxima hora de testeo de la eeprom
   Wire.begin();
+
+  // Si el esp32 se reinicia ajustamos la hora
+  if (RTC.lostPower()) {
+    Serial.println("RTC lost power, lets set the time!");
+    RTC.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  }
   
   hora_futura=readEEPROM(DireccionHora_fut);
   Serial.println(String("Hora Futura= ")+hora_futura);
@@ -401,7 +407,7 @@ void setup() {
   
   delay(1000);
    
-  //Preparamos el montaje de la SD card
+  //Preparamos el montahe de la SD card
   if(!SD.begin()){
       Serial.println("Card Mount Failed");
       return;
@@ -438,34 +444,50 @@ void setup() {
 }
 
 void loop() { 
-   delay(350);
-   DateTime now = RTC.now();
-   Serial.print(now.year(), DEC);
-   Serial.print('/');
-   Serial.print(now.month(), DEC);
-   Serial.print('/');
-   Serial.print(now.day(), DEC);
-   Serial.print(' ');
-   Serial.print(now.hour(), DEC);
-   Serial.print(':');
-   Serial.print(now.minute(), DEC);
-   Serial.print(':');
-   Serial.print(now.second(), DEC);
-   Serial.println();
-   temp = leerTemperatura();
-   turbi = leerTurbidez();
-   ph =leerPh();
-   fecha_hora=now.unixtime();
-   Serial.println(String("Hora actual=  ")+fecha_hora);
+  delay(1000);
+  Serial.println();
+  Serial.println("*******************************************");
+  Serial.println(" ");
+  
+  //Se toman la fecha actual, se imprime por la terminal y se envia por BLE
+  DateTime now = RTC.now();
 
-   // Cuando se recibe un string por bluetooth ////////////////////////////
-   if (BTstring_Complete == 1)
-   {     
+  fecha_hora=now.unixtime();
+  String fh=String(now.unixtime());
+  Serial.println(String("Hora actual=  ")+fecha_hora);
+  if (deviceConnected) {
+      pCharacteristic_RX_date->setValue(fh.c_str());
+      //delay(10);
+      pCharacteristic_RX_date->notify(); 
+   }
+
+  Serial.print(now.year(), DEC);
+  Serial.print('/');
+  Serial.print(now.month(), DEC);
+  Serial.print('/');
+  Serial.print(now.day(), DEC);
+  Serial.print(' ');
+  Serial.print(now.hour(), DEC);
+  Serial.print(':');
+  Serial.print(now.minute(), DEC);
+  Serial.print(':');
+  Serial.print(now.second(), DEC);
+  Serial.println();
+  
+  //Se toman las lecturas de los sensores
+  temp = leerTemperatura();
+  turbi = leerTurbidez();
+  ph =leerPh();
+  
+  // Cuando se recibe un string por bluetooth //
+  // Si el string recibido comienza por ble se cambia el nombre del bluetooth
+  // Si comienza por ssid se cambia la configuración del wifi
+  if (BTstring_Complete == 1)
+  {     
    
     BTstring_Complete = 0; 
     Serial.println(inputString_BT);
   
-    //if (cambio_de_nombre == true)
     if(inputString_BT.startsWith("ble", 0))
       {
         writeEEPROM_String(DireccionNombre, "");
@@ -492,60 +514,74 @@ void loop() {
         
         }
        
-   }
-   if(hora_futura==0 || fecha_hora>=hora_futura){
-     hora_futura=fecha_hora + 3600;
-     fecha=(String)(fecha_hora-(3600*2));
-     datos="{'"+MAC_BLE+"' : {'"+fecha+"' : {'temp':{'value': " + temp + ",'name':'Temperatura', 'unit':'ºC'},'turbi':{'value': "+turbi+",'name':'Turbidez', 'unit':'%'},'ph':{'value': "+ph+",'name':'PH', 'unit':''}}}}";
-     writeEEPROM(DireccionHora_fut, hora_futura);
-     Serial.println(fecha+String(" Hora Futura= ")+hora_futura);
-     String fechaSD=String(now.day(), DEC)+"-"+String(now.month(), DEC)+"-"+String(now.year(), DEC)+" "+String(now.hour(), DEC)+":"+String(now.minute(), DEC)+":"+String(now.second(), DEC);
+  }
 
-     appendFile(SD, "/datosSD.txt",fechaSD+" "+temp+"  "+ turbi +"  "+ ph,true);
+
+  // Se calcula la proxima hora.
+  Serial.println(String("Proxima lectura (actual + 1 hora): ")+future.unixtime());
+
+  //Si es la primera vez o es la hora de tomar test, se guarda el test en la base de datos y en la microSD,
+  //También se establece la proxima hora de test
+  if(hora_futura == 0 || fecha_hora >=hora_futura){
+
+    // Se calcula la próxima hora de Test
+    future = (now + TimeSpan(0,1,0,0));    
+    hora_futura=future.unixtime();
+    fecha=(String)(fecha_hora-(3600*2));
+    writeEEPROM(DireccionHora_fut, hora_futura);
+    Serial.println(String("Fecha de salvar datos ")+fecha+String(" Hora Futura= ")+future.unixtime());
     
-     if(WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
+    // Se salvan los datos en la BD
+    datos="{'"+MAC_BLE+"' : {'"+fecha+"' : {'temp':{'value': " + temp + ",'name':'Temperatura', 'unit':'ºC'},'turbi':{'value': "+turbi+",'name':'Turbidez', 'unit':'%'},'ph':{'value': "+ph+",'name':'PH', 'unit':''}}}}";
     
-       int  httpResponseCode = actualizarBD(datos); 
+    if(WiFi.status()== WL_CONNECTED){   //Check WiFi estado de la conexión
+    
+      int  httpResponseCode = actualizarBD(datos); 
       
-       if(httpResponseCode>0){
-         Serial.println(httpResponseCode);   //Print return code
-       }else{
-         Serial.println(httpResponseCode);
-       }
+      if(httpResponseCode>0){
+        Serial.println(httpResponseCode);   
+      }else{
+        Serial.println(httpResponseCode);
+      }
       
-     }else{
-       if(!conectarWifi()){
-         appendFile(SD, "/datosErrorBD.json",datos,true);
-         Serial.println("Error wifi desconectado");
-         //readFile(SD, "/datosErrorBD.json");   
-       }else
-         readFile(SD, "/datosErrorBD.json");   
-     }
+    }else{
+      //En caso de error de conexión, se salvan los datos en la microSD
+      if(!conectarWifi()){
+        appendFile(SD, "/datosErrorBD.json",datos,true);
+        Serial.println("Error wifi desconectado");
+      }else
+        readFile(SD, "/datosErrorBD.json");   
+    }
+
+    // Se salvan los datos en la microSD y hacemos una copia de seguridad de la petición enviada por método post en la microSD
+    appendFile(SD, "/datosBD.json",datos,true);
+    String fechaSD=String(now.day(), DEC)+"-"+String(now.month(), DEC)+"-"+String(now.year(), DEC)+" "+String(now.hour(), DEC)+":"+String(now.minute(), DEC)+":"+String(now.second(), DEC);
+    appendFile(SD, "/datosSD.txt",fechaSD+" "+temp+"  "+ turbi +"  "+ ph,true);
        
-   }
+  }
   
 }
 
 //Función para leer por el sensor( DS18B20 )
-   String leerTemperatura(){
-   DS18B20.requestTemperatures(); // Petición para obtener las lecturas
-   String temp=String(DS18B20.getTempCByIndex(0),2);
-   Serial.println(String("temperatura ")+ temp) ;
-   if (deviceConnected) {
-     pCharacteristic_RX_temp->setValue(temp.c_str());
-     //delay(10);
-     pCharacteristic_RX_temp->notify(); 
-   }
-   return temp;
+String leerTemperatura(){
+ DS18B20.requestTemperatures(); // Petición para obtener las lecturas
+ String temp=String(DS18B20.getTempCByIndex(0),2);
+ Serial.println(String("temperatura ")+ temp+"ºC") ;
+ if (deviceConnected) {
+    pCharacteristic_RX_temp->setValue(temp.c_str());
+    //delay(10);
+    pCharacteristic_RX_temp->notify(); 
+ }
+ return temp;
 }
 
 //Función para leer por el sensor( SEN0189 )
 String leerTurbidez(){
   sensorTurbValue = analogRead(ANALOG_PIN_0);
   float voltage = sensorTurbValue * (5.0 / 4096.0); // Conversión de la lectura analógica (que va de 0 - 4096) a una tensión (0 - 5V)
-  float porcentaje = 100-(voltage*100.0)/5.0;
+  float porcentaje = 100-(voltage*100.0)/5.0; // Conversión a porcentaje
   String turbity=String(porcentaje,2);
-  Serial.println(String("voltage ")+ voltage +" porcentaje = " + turbity);
+  Serial.println("Nivel de turbidez = " + turbity+"%");
   if (deviceConnected) {
       pCharacteristic_RX_turb->setValue(turbity.c_str());
       //delay(10);
@@ -562,45 +598,48 @@ String leerPh(){
   for(int i=0;i<10;i++) { 
     buf[i]=analogRead(ANALOG_PIN_3);
     delay(10);
-  }
+ }
 
-  //Ordenamos las medidas obtenidas de menor a mayor
-  for(int i=0;i<9;i++){
-   for(int j=i+1;j<10;j++){
-     if(buf[i]>buf[j]){
-       aux=buf[i];
-       buf[i]=buf[j];
-       buf[j]=aux;
-    }
+ //Ordenamos las medidas obtenidas de menor a mayor
+ for(int i=0;i<9;i++){
+  for(int j=i+1;j<10;j++){
+    if(buf[i]>buf[j]){
+      aux=buf[i];
+      buf[i]=buf[j];
+      buf[j]=aux;
    }
   }
-  avgValue=0;
+ }
+ avgValue=0;
  
-  //Descartamos las 2 primeras y las 2 ultimas lecturas, y las sumamos
-  for(int i=2;i<8;i++)
-    avgValue+=buf[i];
+//Descartamos las 2 primeras y las 2 ultimas lecturas, y las sumamos
+ for(int i=2;i<8;i++)
+  avgValue+=buf[i];
   
-  //Convierte la lectura analógica (que va de 0 - 4096) a una tensión (0 - 5V) y lo dividimos entre las 6 muestras tomadas.
-  float pHVol=(float)avgValue*5.0/4096.0/6; 
+ //Convierte la lectura analógica (que va de 0 - 4096) a una tensión (0 - 5V) y lo dividimos entre las 6 muestras tomadas.
+ float pHVol=(float)avgValue*5.0/4096.0/6; 
 
-  //Para obtener voltageRef_4.01 y voltageRef_7.01 tenemos que hacer dos ecuaciones de dos incognitas
-  // voltageRef_4.01 * x + y = 4.01
-  //voltageRef_7.01 * x + y = 7.01
+ //Para obtener voltageRef_4.01 y voltageRef_7.01 tenemos que hacer dos ecuaciones de dos incognitas
+ // voltageRef_4.01 * x + y = 4.01
+ //voltageRef_7.01 * x + y = 7.01
  
-  //Formula voltageRef_4.01 * voltageActual + voltageRef_7.01
-  float phValue = -2.4 * pHVol + 15.17;
+ //Formula voltageRef_4.01 * voltageActual + voltageRef_7.01
+ //float phValue = -2.4 * pHVol + 15.17;
+ //float phValue = -2.4 * pHVol + 15.57;
+ float phValue = -3.125 * pHVol + 18.0725;
  
-  Serial.println(String("voltage ")+pHVol +" nivel pH = " + phValue);
+ Serial.println(String("Lectura ")+analogRead(ANALOG_PIN_3)+String(" voltage ")+pHVol +" nivel pH = " + phValue);
 
-  // pH           Multimetro  Arduino
-  // 4.01 --> voltage   2.98      4.55
-  // 7.01 --> voltage   2.44      3.46
-  String ph=String(phValue,2);
-  if (deviceConnected) {
-     pCharacteristic_RX_ph->setValue(ph.c_str());
-     //delay(10);
-     pCharacteristic_RX_ph->notify(); 
-  }
+ 
+ // pH           Multimetro  Arduino
+ // 4.01 --> voltage   2.98      4.48|4.89|4.55
+ // 7.01 --> voltage   2.44      3.55|3.55|3.46
+ String ph=String(phValue,2);
+ if (deviceConnected) {
+    pCharacteristic_RX_ph->setValue(ph.c_str());
+    //delay(10);
+    pCharacteristic_RX_ph->notify(); 
+ }
   
   return ph;
 }
