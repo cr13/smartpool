@@ -1,0 +1,70 @@
+<resources>
+    <string name="app_name">Smart Pool</string>
+    <string name="facebook_app_id">2053602161577979</string>
+    <string name="fb_login_protocol_scheme">fb2053602161577979</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Conf. Wifi</string>
+    <string name="loading">Cargando...</string>
+
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Contraseña</string>
+    <string name="action_sign_in">Iniciar Sesión</string>
+    <string name="action_new_account">Registrarse</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">El correo es invalido</string>
+    <string name="error_invalid_password">La contraseña debe contener al menos 6 caracteres</string>
+    <string name="error_incorrect_password">La contraseña es incorrecta</string>
+    <string name="error_field_required">Este campo es requiredo</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="error_invalid_passwordrep">Las contraseñas no coinciden</string>
+    <string name="error_field_requireds">Rellene los campos vacios</string>
+    <string name="successful_pass">La contraseña ha sido modificada con exito.</string>
+    <string name="cambiar_contraseña">Cambiar Contraseña</string>
+    <string name="olvidar_pass"><u>¿Olvidaste tu contraseña?</u></string>
+    <string name="guardar">Guardar</string>
+    <string name="forgot_password">¿Olvidaste tú contraseña?</string>
+    <string name="copyright">Copyright @ | 2018 | TFG | Cristóbal Rodríguez</string>
+    <string name="auth_failed">Error. El email ya existe.</string>
+    <string name="conectaCon">-------------------------- O inicia con --------------------------</string>
+
+
+    <!--Bluetooth-->
+    <string name="ble_not_supported">El bluetooth no es soportado</string>
+    <string name="label_data">Data:</string>
+    <string name="label_device_address">Device address:</string>
+    <string name="label_state">Estado:</string>
+    <string name="no_data">No data</string>
+    <string name="connected">Conectar</string>
+    <string name="disconnected">Desconectar</string>
+    <string name="title_devices">Escaneando...</string>
+    <string name="title_devices2">Dispositivos</string>
+
+    <string name="error_bluetooth_not_supported">Bluetooth no soportado.</string>
+
+    <string name="unknown_device">Dispositivo desconocido</string>
+    <string name="unknown_characteristic">Characteristic Desconocida</string>
+    <string name="unknown_service">Servicio desconocido</string>
+    <string name="menu_connect">Conectar</string>
+    <string name="menu_disconnect">Desconectar</string>
+    <string name="cambiar_name">Nombre BLE</string>
+    <string name="cambiar_nombre">Cambiar nombre</string>
+    <string name="config_wifi">Configuración wifi</string>
+
+    <string name="temperature">Temperatura (°C)</string>
+    <string name="ph">Nivel de pH</string>
+    <string name="turbidity">Turbidez (%)</string>
+    <string name="chlorine">Nivel de Cloro</string>
+    <string name="date">Fecha y hora</string>
+    <string name="action_statistics">Estadísticas</string>
+    <string name="rango">Rango de tiempo</string>
+    <string name="misdispositivos">Mis dispositivos</string>
+
+</resources>

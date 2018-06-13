@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialogLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#b4fcfcfc"
+    android:layout_margin="15dp"
+
+    >
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="25dp">
+    <TextView
+        android:id="@+id/dlgTitulo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="5dp"
+        android:text="@string/cambiar_contraseña"
+        android:textSize="25sp"
+        android:textColor="@color/colorBlueLogo"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/etPasswordold"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:ems="10"
+        android:hint="Contraseña actual"
+        android:inputType="textPassword" />
+
+    <EditText
+    android:id="@+id/etPasswordnew"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="5dp"
+    android:ems="10"
+    android:hint="Contraseña"
+    android:inputType="textPassword" />
+    <EditText
+        android:id="@+id/etPasswordrep"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:ems="10"
+        android:hint="Repita Contraseña"
+        android:inputType="textPassword" />
+    <Button
+        android:id="@+id/btn_guardar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/btn_seletor"
+        android:textColor="@drawable/text_color_selector"
+        android:text="@string/guardar"
+        android:textStyle="bold"
+       />
+</LinearLayout>
+</LinearLayout>
