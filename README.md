@@ -7,4 +7,4 @@ través de un micro controlador (**ESP32**) y esté se comunicará, o bien a tra
 Además consta de un lector microSD para el caso de no tener wifi poder guardar la monitorización.
 ## Diseño del circuito con todos sus componentes
 
-![device desing](https://github.com/cr13/smartpool/blob/master/smartpool/Dise%C3%B1o%20del%20circuito.png)
+![device desing](https://github.com/cr13/smartpool/blob/master/smartpool_ino/Dise%C3%B1o%20del%20circuito.png)
